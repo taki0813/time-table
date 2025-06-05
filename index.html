@@ -74,33 +74,35 @@
   </style>
 </head>
 <body>
-  <h2>2025年前期 国際情報学部 空き教室・授業検索</h2>
+  <div class="container">
+    <h2>2025年前期 国際情報学部 空き教室・授業検索</h2>
 
-  <label>曜日：</label>
-  <select id="day">
-    <option value="月">月</option>
-    <option value="火">火</option>
-    <option value="水">水</option>
-    <option value="木">木</option>
-    <option value="金">金</option>
-  </select>
+    <div class="controls">
+      <label>曜日：</label>
+      <select id="day">
+        <option value="月">月</option>
+        <option value="火">火</option>
+        <option value="水">水</option>
+        <option value="木">木</option>
+        <option value="金">金</option>
+      </select>
 
-  <label>時限：</label>
-  <select id="period">
-    <option value="1">1限</option>
-    <option value="2">2限</option>
-    <option value="3">3限</option>
-    <option value="4">4限</option>
-    <option value="5">5限</option>
-    <option value="6">6限</option>
-  </select>
+      <label>時限：</label>
+      <select id="period">
+        <option value="1">1限</option>
+        <option value="2">2限</option>
+        <option value="3">3限</option>
+        <option value="4">4限</option>
+        <option value="5">5限</option>
+        <option value="6">6限</option>
+      </select>
 
-  <button onclick="searchEmptyRooms()">空き教室検索</button>
-  <button onclick="searchOccupiedRooms()">授業確認</button>
-  <button onclick="checkConsecutiveAvailability()">連続空き教室表示</button>
-
-  <div id="result"></div>
-
+      <button onclick="searchEmptyRooms()">空き教室検索</button>
+      <button onclick="searchOccupiedRooms()">授業確認</button>
+      <button onclick="checkConsecutiveAvailability()">連続空き教室表示</button>
+    </div>
+    <div id="result"></div>
+  </div>
   <script>
     const allRooms = ["301", "401", "501", "502WS", "701", "702", "801", "802", "901", "902", "1001", "1002", "1003", "1004", "1101", "1102", "1103", "1104"];
 
