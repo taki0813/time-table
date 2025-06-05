@@ -5,16 +5,71 @@
   <title>空き教室・授業検索ツール</title> 
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    select, button { margin: 5px; padding: 5px; }
-    h3 { margin-top: 30px; }
-    body{text-align: center;}
-    #result { margin-top: 20px; }
-    ul { list-style: none; padding-left: 0; }
-     @media (max-width: 600px) {
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      background-color: #fff;
+      color: #111;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 80px auto;
+      padding: 0 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 40px;
+    }
+    select, button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #111;
+      border-radius: 6px;
+      transition: border 0.3s;
+    }
+    select:focus, button:focus {
+      outline: none;
+      border-color: #0071e3;
+    }
+    button {
+      background-color: #0071e3;
+      color: white;
+      border: none;
+    }
+    button:hover {
+      background-color: #005bb5;
+    }
+    #result {
+      margin-top: 40px;
+      font-size: 1.1rem;
+      text-align: left;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    @media (max-width: 600px) {
       .controls {
         flex-direction: column;
       }
+    }
   </style>
 </head>
 <body>
