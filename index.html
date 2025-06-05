@@ -2,8 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <title>空き教室・授業検索ツール</title> 
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>空き教室・授業検索ツール</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
     select, button { margin: 5px; padding: 5px; }
@@ -11,6 +11,10 @@
     body{text-align: center;}
     #result { margin-top: 20px; }
     ul { list-style: none; padding-left: 0; }
+     @media (max-width: 600px) {
+      .controls {
+        flex-direction: column;
+      }
   </style>
 </head>
 <body>
