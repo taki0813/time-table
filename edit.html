@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>時間割一括編集ツール</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      background-color: #fff;
+      color: #111;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 80px auto;
+      padding: 0 20px;
+      text-align: center;
+    }
+    h2 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
+    .info {
+      text-align: left;
+      margin-bottom: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #eee;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      width: 100%;
+      justify-content: center;
+    }
+    label{font-size: 1rem;}
+    select, button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #111;
+      border-radius: 6px;
+      transition: border 0.3s;
+    }
+    .room-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .room-list-item label {
+      font-weight: bold;
+    }
+    .room-list-item input {
+      flex-grow: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+    }
+    #updateBtn {
+      background-color: #0071e3;
+    }
+    #resetBtn {
+      background-color: #ffc107;
+      color: #111;
+    }
+    #updateBtn:hover { background-color: #005bb5; }
+    #resetBtn:hover { background-color: #e0a800; }
+    .status-message {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      color: #4caf50;
+    }
+    .back-link {
+      margin-top: 20px;
+      display: block;
+      color: #0071e3;
+      text-decoration: none;
+    }
+    @media (max-width: 600px) {
+      .controls {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>時間割一括編集</h2>
+    <div class="info">
+      <h3>使い方</h3>
+      <p>以下のプルダウンで「<strong>曜日</strong>」と「<strong>時限</strong>」を選択してください。</p>
+      <p>すべての教室が表示されるので、授業がある教室の欄にのみ授業名を入力してください。</p>
+    </div>
+    
+    <div class="controls">
+      <div class="input-group">
+        <label for="day">曜日：</label>
+        <select id="day">
+          <option value="月">月</option>
+          <option value="火">火</option>
+          <option value="水">水</option>
+          <option value="木">木</option>
+          <option value="金">金</option>
+          <option value="土">土</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="period">時限：</label>
+        <select id="period">
+          <option value="1">1限</option>
+          <option value="2">2限</option>
+          <option value="3">3限</option>
+          <option value="4">4限</option>
+          <option value="5">5限</option>
+          <option value="6">6限</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="room-list"></div>
+
+    <div class="controls">
+      <button id="updateBtn" onclick="updateSchedule()">時間割を更新</button>
+      <button id="resetBtn" onclick="resetData()">全データリセット</button>
+    </div>
+    <div id="status" class="status-message"></div>
+    
+    <a href="index.html" class="back-link">検索ページに戻る</a>
+  </div>
+  <script>
+    const allRooms = ["301", "401", "501", "502WS", "701", "702", "801", "802", "901", "902", "1001", "1002", "1003", "1004", "1101", "1102", "1103", "1104"];
+    
+    const defaultSchedule = {
+      "301": {"月1": "学問最前線", "月2": "基礎情報学", "月4": "哲学Ⅰ/比較思想論", "火1": "アプリケーション開発", "火2": "民事法(総則と情報契約法)", "火3": "民事法（情報不法行為法）", "火4": "AI・ロボット法", "水1": "プログラミングのための数学", "水2": "国際情報概論/国際情報史", "木1": "情報理論", "木2": "情報ネットワーク論", "木3": "データベース論", "木4": "情報と国際コミュニケーション/情報と国際政治", "金2": "インターネット概論", "金3": "情報プライバシー権法", "金4": "ドキュメンタリー論/特殊講義A1(ドキュメンタリー論)", "金5": "SNSとコミュニケーション"},
+      "401": {"月1": "デジタルメディアとコンテンツ", "月2": "情報セキュリティ論", "火1": "歴史学/歴史入門", "火2": "国際法/外交政策論", "火4": "法学概論（石井）", "水2": "情報産業における人的資源管理論", "木2": "知的財産法/民事法（情報財産権法）", "木3": "先端国先情報学/国際情報概論", "木4": "心理学", "木5": "システム開発論", "金2": "政治学/政治入門", "金3": "企業と情報法", "金4": "国際規約と国際標準化団体", "金5": "情報社会学Ⅰ/比較メディア論", "土2": "FLP演習A（メディア・ジャーナリズム）", "土3": "FLP演習B（メディア・ジャーナリズム）", "土4": "FLP演習C（メディア・ジャーナリズム）"},
+      "501": {"月1": "セキュリティマネジメント", "月2": "情報サービスとゲーミフィケーション", "月3": "民事法(財産法総合)", "月5": "English for Current Topics", "火1": "国際私法", "火2": "法情報学", "火3": "特殊講義B1（クラウドコンピューティング）", "火4": "法学概論（中村）", "火5": "情報制作事例研究", "水1": "ミクロ経済学", "木1": "異文化コミュニケーション論", "木2": "ICTケーススタディ（ネットワーク構築）", "木5": "情報教育論", "金1": "国際関係論", "金4": "インターフェースデザインとユーザ体験", "土1": "イノベーションと技術"},
+      "502WS": {"月4": "国際情報演習Ⅱ（岡嶋）", "月5": "基礎演習（岡嶋）", "木3": "国際情報概論Ⅳ（松野）", "木4": "国際情報演習Ⅱ（松野）", "金5": "基礎演習", "土3": "FLP演習A（メディア・ジャーナリズム）", "土4": "FLP演習B（メディア・ジャーナリズム）", "土5": "FLP演習C（メディア・ジャーナリズム）"},
+      "701": {"月2": "情報と国家安全保障", "月3": "国際情報演習Ⅱ（飯尾）", "月4": "国際情報演習Ⅳ（飯尾）", "月5": "基礎演習（飯尾）", "火1": "情報フルエンシー", "火2": "情報判例研究A", "火4": "システムとソフトウェア", "水3": "情報フルエンシー", "木2": "システム監査論", "木4": "コンピュータアーキテクチャ", "木5": "金融情報システム論", "金3": "国際情報演習Ⅳ（岡嶋）", "金4": "情報判例研究B", "金5": "ICTビジネスと公共政策", "土1": "情報フルエンシー"},
+      "702": {"月2": "情報と国家安全保障", "火4": "システムとソフトウェア", "木2": "システム監査論", "木4": "コンピュータアーキテクチャ", "木5": "金融情報システム論"},
+      "801": {"月3": "国際情報演習Ⅱ（松崎）", "月4": "国際情報演習Ⅳ（松崎）", "月5": "基礎演習（松崎）", "火1": "統合英語Ⅰ", "火3": "国際情報演習Ⅳ（斎藤）", "火5": "国際情報演習Ⅳ（須藤）", "水2": "情報英語Ⅰ", "水3": "統合英語Ⅰ", "水4": "アカデミックイングリッシュⅠ", "木1": "情報フルエンシー", "木3": "国際情報概論Ⅳ（平野）", "木4": "国際情報演習Ⅱ（平野）", "木5": "基礎演習（平野）", "金1": "統合英語Ⅰ", "金2": "情報英語Ⅰ", "金4": "刑事法（サイバーセキュリティと刑事法）", "金5": "国際情報演習Ⅳ（保坂）"},
+      "802": {"月4": "情報フルエンシー", "月5": "基礎演習（小花）", "火4": "国際情報演習Ⅱ（小花）", "火5": "国際情報演習Ⅳ（小花）", "水3": "国際情報演習Ⅱ（渡部）", "木3": "情報フルエンシー", "木5": "AI・データサイエンス演習A(1)", "木5": "AI・データサイエンス演習B(1)", "木5": "AI・データサイエンス演習C(1)"},
+      "901": {"月3": "統合英語Ⅰ", "月4": "情報英語Ⅰ", "月5": "基礎演習（矢島）", "火1": "統合英語Ⅰ", "火2": "情報英語Ⅰ", "火3": "情報フルエンシー", "火5": "国際情報演習Ⅳ（石井）", "水3": "情報英語Ⅰ", "木1": "統合英語Ⅰ", "木2": "統合英語Ⅰ", "木3": "統合英語Ⅰ", "木4": "情報フルエンシー", "木5": "基礎演習（村田）", "金1": "統合英語Ⅰ", "金2": "情報英語Ⅰ", "金3": "国際情報演習Ⅱ（村田）", "金4": "国際情報演習Ⅳ（村田）"},
+      "902": {"月2": "情報英語Ⅰ", "月3": "国際情報演習Ⅳ（橋本）", "月4": "国際情報演習Ⅱ(橋本）", "月5": "基礎演習（橋本）", "木4": "国際情報演習Ⅱ（斎藤）", "木5": "基礎演習（斎藤）", "金3": "国際情報演習Ⅳ（矢島）", "金4": "国際情報演習Ⅱ（矢島）"},
+      "1001": {"月5": "基礎演習（吉田）", "火5": "基礎演習（渡部）", "木3": "国際情報演習Ⅳ（岩隈）", "木4": "国際情報演習Ⅱ（岩隈）", "木5": "基礎演習（岩隈）"},
+      "1002": {"木3": "国際情報概論Ⅳ（中村）", "木4": "国際情報演習Ⅱ（吉田）", "木5": "国際情報演習Ⅳ（飯尾）"},
+      "1003": {"火5": "国際情報演習Ⅳ（中島）", "木4": "国際情報演習Ⅱ（中村）", "木5": "基礎演習（中村）"},
+      "1004": {"木4": "ビジネスイングリッシュⅠ", "木5": "基礎演習（原田）"},
+      "1101": {"火5": "基礎演習（角田）", "木3": "国際情報演習Ⅳ（小向）", "木4": "国際情報演習Ⅱ（小向）", "木5": "基礎演習（小向）"},
+      "1102": {"木4": "国際情報演習Ⅱ（石井）", "木5": "基礎演習（石井）"},
+      "1103": {"木4": "国際情報演習Ⅱ（中島）", "木5": "基礎演習（中嶋）"},
+      "1104": {"木4": "Practical English for Informatics"}
+    };
+    
+    function getSchedule() {
+      const stored = localStorage.getItem('scheduleData');
+      return stored ? JSON.parse(stored) : defaultSchedule;
+    }
+
+    function saveSchedule(schedule) {
+      localStorage.setItem('scheduleData', JSON.stringify(schedule));
+      document.getElementById("status").textContent = "時間割を更新しました。";
+    }
+
+    function updateSchedule() {
+      const day = document.getElementById("day").value;
+      const period = document.getElementById("period").value;
+      const schedule = getSchedule();
+      const timeKey = day + period;
+
+      // 選択された時間帯の既存データを一度クリア
+      for (const room of allRooms) {
+        if (schedule[room] && schedule[room][timeKey]) {
+          delete schedule[room][timeKey];
+          if (Object.keys(schedule[room]).length === 0) {
+            delete schedule[room];
+          }
+        }
+      }
+
+      // 新しいデータをパースして追加
+      const roomInputs = document.querySelectorAll('#room-list input');
+      for (const input of roomInputs) {
+        const room = input.dataset.room;
+        const subject = input.value.trim();
+
+        if (subject) {
+          if (!schedule[room]) {
+            schedule[room] = {};
+          }
+          schedule[room][timeKey] = subject;
+        }
+      }
+      saveSchedule(schedule);
+    }
+
+    function resetData() {
+      if (confirm("本当にデータをリセットしますか？この操作は元に戻せません。")) {
+        localStorage.removeItem('scheduleData');
+        document.getElementById("status").textContent = "時間割データをリセットしました。";
+        loadSchedule();
+      }
+    }
+
+    function loadSchedule() {
+      const schedule = getSchedule();
+      const day = document.getElementById("day").value;
+      const period = document.getElementById("period").value;
+      const timeKey = day + period;
+      const roomListContainer = document.getElementById("room-list");
+      roomListContainer.innerHTML = '';
+      
+      allRooms.forEach(room => {
+        const roomItem = document.createElement('div');
+        roomItem.classList.add('room-list-item');
+        
+        const label = document.createElement('label');
+        label.textContent = room;
+        roomItem.appendChild(label);
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.dataset.room = room;
+        input.placeholder = '授業名';
+        if (schedule[room] && schedule[room][timeKey]) {
+          input.value = schedule[room][timeKey];
+        }
+        roomItem.appendChild(input);
+        
+        roomListContainer.appendChild(roomItem);
+      });
+    }
+    
+    document.getElementById("day").addEventListener('change', loadSchedule);
+    document.getElementById("period").addEventListener('change', loadSchedule);
+
+    window.onload = loadSchedule;
+  </script>
+</body>
+</html>
