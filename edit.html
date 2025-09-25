@@ -91,8 +91,16 @@
       background-color: #ffc107;
       color: #111;
     }
+    #exportBtn {
+      background-color: #4caf50;
+    }
+    #importBtn {
+      background-color: #2196f3;
+    }
     #updateBtn:hover { background-color: #005bb5; }
     #resetBtn:hover { background-color: #e0a800; }
+    #exportBtn:hover { background-color: #45a049; }
+    #importBtn:hover { background-color: #1e88e5; }
     .status-message {
       margin-top: 20px;
       font-size: 1.1rem;
@@ -103,6 +111,15 @@
       display: block;
       color: #0071e3;
       text-decoration: none;
+    }
+    #import-export-area {
+        display: none;
+        margin-top: 20px;
+    }
+    #import-export-area textarea {
+        width: 100%;
+        height: 150px;
+        font-family: monospace;
     }
     @media (max-width: 600px) {
       .controls {
@@ -150,9 +167,17 @@
     <div class="controls">
       <button id="updateBtn" onclick="updateSchedule()">時間割を更新</button>
       <button id="resetBtn" onclick="resetData()">全データリセット</button>
+      <button id="exportBtn" onclick="toggleExportImport('export')">データ出力</button>
+      <button id="importBtn" onclick="toggleExportImport('import')">データ入力</button>
     </div>
     <div id="status" class="status-message"></div>
     
+    <div id="import-export-area">
+        <h4>データをコピー/貼り付けしてください</h4>
+        <textarea id="import-export-text"></textarea>
+        <button onclick="performImport()">確定</button>
+    </div>
+
     <a href="index.html" class="back-link">検索ページに戻る</a>
   </div>
   <script>
@@ -257,7 +282,35 @@
         roomListContainer.appendChild(roomItem);
       });
     }
-    
+
+    function toggleExportImport(mode) {
+      const area = document.getElementById('import-export-area');
+      const text = document.getElementById('import-export-text');
+      area.style.display = 'block';
+      if (mode === 'export') {
+        text.value = JSON.stringify(getSchedule(), null, 2);
+      } else {
+        text.value = '';
+      }
+    }
+
+    function performImport() {
+      const text = document.getElementById('import-export-text').value;
+      try {
+        const newSchedule = JSON.parse(text);
+        if (typeof newSchedule === 'object' && newSchedule !== null) {
+          saveSchedule(newSchedule);
+          document.getElementById('status').textContent = 'データをインポートしました。';
+          loadSchedule();
+          document.getElementById('import-export-area').style.display = 'none';
+        } else {
+          throw new Error('Invalid data format.');
+        }
+      } catch (e) {
+        document.getElementById('status').textContent = 'インポートに失敗しました。データ形式が正しくありません。';
+      }
+    }
+
     document.getElementById("day").addEventListener('change', loadSchedule);
     document.getElementById("period").addEventListener('change', loadSchedule);
 
